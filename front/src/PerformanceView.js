@@ -10,12 +10,22 @@ export default function PerformanceView({ onLogout }) {
     const fetchPerformance = async () => {
       setLoading(true);
       setError('');
+    //   const getCsrfToken = () => {
+    //   return document.cookie.split('; ').find(row => row.startsWith('csrftoken'))
+    //   ?.split('=')[1];
+    // };
 
       try {
+        // const [perfRes, treeRes] = await Promise.all([
+        //   fetch('/api/performance/', { credentials: 'include',headers:{ 'X-CSRFToken': getCsrfToken() } }),
+        //   fetch('/api/tree-performance/', { credentials: 'include',headers:{ 'X-CSRFToken': getCsrfToken() }})
+        // ]);
+
         const [perfRes, treeRes] = await Promise.all([
-          fetch('/me/performance/', { credentials: 'include' }),
-          fetch('/me/tree-performance/', { credentials: 'include' })
+          fetch('/api/performance/', { credentials: 'include' }),
+          fetch('/api/tree-performance/', { credentials: 'include' })
         ]);
+
 
         if (perfRes.ok) {
           setPerformance(await perfRes.json());
@@ -75,7 +85,14 @@ export default function PerformanceView({ onLogout }) {
           </div>
 
           {/* Team Performance (if exists) */}
-          {treePerformance && (
+          {treePerformance && treePerformance.total_tasks > 0 && (
+          <div className="bg-white p-8 rounded-xl shadow-sm border">
+            <h2 className="text-2xl font-bold mb-6">Team Stats</h2>
+            <div>Total: {treePerformance.total_tasks}</div>
+            <div>On-time: {treePerformance.percent_completed_on_time?.toFixed(1)}%</div>
+          </div>
+        )}
+          {/* {treePerformance && (
             <div className="bg-white p-8 rounded-xl shadow-sm border">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">Team Performance</h2>
               <div className="overflow-x-auto">
@@ -105,9 +122,9 @@ export default function PerformanceView({ onLogout }) {
                 </table>
               </div>
             </div>
-          )}
+          )} */}
         </>
       )}
     </div>
   );
-}
+} 

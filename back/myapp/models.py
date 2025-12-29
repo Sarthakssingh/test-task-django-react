@@ -71,7 +71,6 @@ class Task(models.Model):
     )
     assigned_by = models.ForeignKey(UserProfile,on_delete=models.CASCADE,related_name='task_assigned')
     status = models.CharField(max_length=20,choices=status_choice, default='PENDING')
-    deadline = models.DateTimeField()
     completed_at = models.DateTimeField(null=True,blank=True)
     created = models.DateTimeField(auto_now=True)
 

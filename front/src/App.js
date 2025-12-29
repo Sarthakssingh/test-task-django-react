@@ -9,18 +9,22 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/me/performance/', { credentials: 'include' })
+    fetch('/api/performance/', { credentials: 'include' })
       .then(r => r.ok ? setIsLoggedIn(true) : setIsLoggedIn(false))
       .catch(() => setIsLoggedIn(false));
   }, []);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    navigate('/tasks');
+    navigate('/api/tasks');
   };
 
   const handleLogout = async () => {
-    await fetch('/auth/logout/', { credentials: 'include' });
+    const getCsrfToken = () => {
+      return document.cookie.split('; ').find(row => row.startsWith('csrftoken'))
+      ?.split('=')[1];
+    };
+    await fetch('/api/logout/', { credentials: 'include' });
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -28,9 +32,9 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Routes>
-        <Route path="/" element={!isLoggedIn ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/tasks" />} />
-        <Route path="/tasks" element={isLoggedIn ? <TaskForm onLogout={handleLogout} /> : <Navigate to="/" />} />
-        <Route path="/performance" element={isLoggedIn ? <PerformanceView onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/api" element={!isLoggedIn ? <LoginForm onLogin={handleLogin} /> : <Navigate to="/api/tasks" />} />
+        <Route path="/api/tasks" element={isLoggedIn ? <TaskForm onLogout={handleLogout} /> : <Navigate to="/api/" />} />
+        <Route path="/api/performance" element={isLoggedIn ? <PerformanceView onLogout={handleLogout} /> : <Navigate to="/api/" />} />
       </Routes>
     </div>
   );

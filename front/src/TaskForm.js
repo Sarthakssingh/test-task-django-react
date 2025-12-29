@@ -23,11 +23,26 @@ export default function TaskForm() {
     e.preventDefault();
     setLoadingTask(true);
     setError('');
+    // const getCsrfToken = () => {
+    //     const name = 'csrftoken=';
+    //       return document.cookie.split(';').find(row => {
+    //         const cookie = row.trim().split('=')[0];
+    //         return cookie === name.slice(0, -1);
+    //       })?.split('=')[1];
+    //     };
+    const getCsrfToken = () => {
+      const token = document.cookie.split('; ').find(row => row.startsWith('csrftoken=') || row.startsWith('csrftoken '))
+      ?.split('=')[1];
+      console.log(token)
+      return token
+    };
 
     try {
-      const response = await fetch('/api/tasks/', {
+      const response = await fetch('http://localhost:8000/api/tasks/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+         },
         credentials: 'include',
         body: JSON.stringify({
           title,
@@ -120,7 +135,7 @@ export default function TaskForm() {
         </button>
       </form>
       <div className="mb-6">
-      <Link to="/performance" className="text-blue-600 hover:text-blue-800 font-medium">
+      <Link to="/api/performance" className="text-blue-600 hover:text-blue-800 font-medium">
   ← View Performance
 </Link>
     </div>

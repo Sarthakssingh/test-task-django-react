@@ -10,11 +10,19 @@ export default function LoginForm({ onLogin }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+      const getCsrfToken = () => {
+        return document.cookie
+          .split('; ')
+          .find(row => row.startsWith('csrftoken='))
+          ?.split('=')[1];
+        };
 
     try {
-      const response = await fetch('/api/auth/login/', {
+      const response = await fetch('/api/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+        'X-CSRFToken': getCsrfToken()},
+        
         credentials: 'include', 
         body: JSON.stringify({ username, password })
       });

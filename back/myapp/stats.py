@@ -9,7 +9,7 @@ def user_performance(user_profile: UserProfile) -> dict:
     on_time = qs.filter(
         status="COMPLETED",
         completed_at__isnull=False,
-        completed_at__lte=F("deadline"),
+        completed_at__lte=F("created"),
     ).count()
 
     pct_on_time = (on_time * 100 / total) if total > 0 else 0
@@ -33,7 +33,7 @@ def tree_performance(top_profile: UserProfile) -> dict:
     on_time = qs.filter(
         status="COMPLETED",
         completed_at__isnull=False,
-        completed_at__lte=F("deadline"),
+        completed_at__lte=F("created"),
     ).count()
 
     pct_on_time = (on_time * 100 / total) if total > 0 else 0

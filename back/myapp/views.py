@@ -9,34 +9,47 @@ from .service import assign_task
 from .stats import user_performance, tree_performance
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.middleware.csrf import get_token
 
 
 
 # Create your views here.
-
-class TaskViewSet(viewsets.ViewSet):
+# @method_decorator(csrf_exempt,name='dispatch')
+class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    
 
-    def create(self, request):
-        serializer = TaskSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        assigned_by_profile = request.user.profile
-        assigned_to_profile = serializer.validated_data['assigned_to']
-        title = serializer.validated_data['title']
-        description = serializer.validated_data.get('description', '')
-        deadline = serializer.validated_data['deadline']
-
-        task = assign_task(
-            assigned_by=assigned_by_profile,
-            assigned_to=assigned_to_profile,
-            title=title,
-            description=description,
-            deadline=deadline,
+    def perform_create(self, serializer):
+        assign_task(
+            assigned_by=self.request.user.profile,
+            assigned_to=serializer.validated_data['assigned_to'],
+            title = serializer.validated_data['title'],
+            description = serializer.validated_data.get('description', '')
         )
 
-        out = TaskSerializer(task)
-        return Response(out.data, status=status.HTTP_201_CREATED)
+    # def create(self, request):
+    #     serializer = TaskSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+
+    #     assigned_by_profile = request.user.profile
+    #     assigned_to_profile = serializer.validated_data['assigned_to']
+    #     title = serializer.validated_data['title']
+    #     description = serializer.validated_data.get('description', '')
+
+
+    #     task = assign_task(
+    #         assigned_by=assigned_by_profile,
+    #         assigned_to=assigned_to_profile,
+    #         title=title,
+    #         description=description,
+    #     )
+
+        # out = TaskSerializer(Task)
+        # return Response(out.data, status=status.HTTP_201_CREATED)
     
 
 @api_view(["GET"])
@@ -67,6 +80,7 @@ def my_tree_performance(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_exempt
 def login_view(request):
     username = request.data.get("username")
     password = request.data.get("password")
@@ -78,11 +92,12 @@ def login_view(request):
     if user is None:
         return Response({"detail": "Invalid credentials"}, status=400)
 
-    login(request, user)  # creates session cookie
+    login(request, user) 
+    # Response.set_cookie('csrftoken', get_token(request))
     return Response({"detail": "Logged in", "username": user.username})
 
 
-@api_view(["POST"])
+@api_view(["GET","POST"])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     logout(request)
@@ -135,4 +150,20 @@ def register_view(request):
         },
         status=201,
     )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@csrf_exempt  
+def tasks_view(request):
+    data = request.data
+    assigned_to_id = data.get('assigned_to') or request.user.profile.id 
+    
+    task = Task.objects.create(
+        title=data['title'],
+        description=data.get('description', ''),
+        assigned_to_id=assigned_to_id,
+        assigned_by_id=request.user.profile.id,
+        status='PENDING'
+    )
+    return Response({'id': task.id}, status=201)
 

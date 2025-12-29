@@ -25,7 +25,7 @@ class UserprofileAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title','assigned_by','assigned_to','status','deadline']
+    list_display = ['title','assigned_by','assigned_to','status']
     list_filter = ['status','assigned_by','assigned_to']
 
 
